@@ -1,23 +1,26 @@
 import Speaker from "./Speaker";
+import useRequestDelay, {REQUEST_STATUS} from "../hooks/useRequestDelay";
 import {data} from "../../SpeakerData";
-import {useState} from "react";
 
 export default function SpeakersList({showSessions}) {
 
-    const [speakersData, setSpeakersData] = useState(data);
+    const {
+        data: speakersData,
+        requestStatus,
+        error,
+        updateRecord,
+    } = useRequestDelay(2000, data);
 
-    function onFavoriteToggle(id) {
-        const speakersRecPrevious = speakersData.find(function (rec) {
-            return rec.id === id;
-        });
-        const spekerRecUpdated = {
-            ...speakersRecPrevious,
-            favorite: !speakersRecPrevious.favorite,
-        }
-        const speakersDataNew = speakersData.map(function (rec) {
-            return rec.id === id ? spekerRecUpdated : rec;
-        });
-        setSpeakersData(speakersDataNew);
+    if (requestStatus === REQUEST_STATUS.FAILURE) {
+        return (
+            <div className={"text-danger"}>
+                ERROR: <b>Loading Speaker Data Failed {error}</b>
+            </div>
+        );
+    }
+
+    if (requestStatus === REQUEST_STATUS.LOADING) {
+        return <div>Loading...</div>;
     }
 
     return (
@@ -29,8 +32,12 @@ export default function SpeakersList({showSessions}) {
                             key={speaker.id}
                             speaker={speaker}
                             showSessions={showSessions}
-                            onFavoriteToggle={() => {
-                                onFavoriteToggle(speaker.id)
+                            onFavoriteToggle={(doneCallback) => {
+                                // onFavoriteToggle(speaker.id)
+                                updateRecord({
+                                    ...speaker,
+                                    favorite: !speaker.favorite,
+                                }, doneCallback);
                             }}
                         />
                     );
