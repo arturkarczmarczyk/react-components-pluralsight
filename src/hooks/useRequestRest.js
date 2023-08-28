@@ -1,4 +1,5 @@
 import {useEffect, useState} from "react";
+import axios from "axios";
 
 export const REQUEST_STATUS = {
     LOADING: 'loading',
@@ -6,8 +7,10 @@ export const REQUEST_STATUS = {
     FAILURE: 'failure',
 }
 
-export default function useRequestDelay(delayTime = 1000, initialData = []) {
-    const [data, setData] = useState(initialData);
+const restUrl = "api/speakers";
+
+export default function useRequestRest() {
+    const [data, setData] = useState();
     const [requestStatus, setRequestStatus] = useState(REQUEST_STATUS.LOADING);
     const [error, setError] = useState('');
 
@@ -16,10 +19,10 @@ export default function useRequestDelay(delayTime = 1000, initialData = []) {
     useEffect(() => {
         async function delayFunc() {
             try {
-                await delay(delayTime);
+                const result = await axios.get(restUrl);
                 // throw "Had error";
                 setRequestStatus(REQUEST_STATUS.SUCCESS);
-                setData(data);
+                setData(result.data);
             } catch (e) {
                 setRequestStatus(REQUEST_STATUS.FAILURE);
                 setError(e);
@@ -38,7 +41,7 @@ export default function useRequestDelay(delayTime = 1000, initialData = []) {
         async function delayFunction() {
             try {
                 setData(newRecords);
-                await delay(delayTime);
+                await axios.put(`${restUrl}/${recordUpdated.id}`, recordUpdated);
                 if (doneCallback) {
                     doneCallback();
                 }
@@ -60,7 +63,7 @@ export default function useRequestDelay(delayTime = 1000, initialData = []) {
         async function delayFunction() {
             try {
                 setData(newRecords);
-                await delay(delayTime);
+                await axios.post(`${restUrl}/99999`, record);
                 if (doneCallback) {
                     doneCallback();
                 }
@@ -84,7 +87,7 @@ export default function useRequestDelay(delayTime = 1000, initialData = []) {
         async function delayFunction() {
             try {
                 setData(newRecords);
-                await delay(delayTime);
+                await axios.delete(`${restUrl}/${record.id}`, record);
                 if (doneCallback) {
                     doneCallback();
                 }
