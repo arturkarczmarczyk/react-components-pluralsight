@@ -1,7 +1,8 @@
-import {useContext, useState} from "react";
+import {memo, useContext, useState} from "react";
 import {SpeakerFilterContext} from "../contexts/SpeakerFilterContext";
 import SpeakerProvider, {SpeakerContext} from "../contexts/SpeakerContext";
 import SpeakerDelete from "./SpeakerDelete";
+import ErrorBoundary from "./ErrorBoundary";
 
 function Session(props) {
     return (
@@ -95,7 +96,7 @@ function SpeakerDemographics() {
             <SpeakerFavorite />
             <div>
                 <p className={"card-description"}>
-                    {bio}
+                    {bio.substr(0,70)}
                 </p>
                 <div className={"social d-flex flex-row mt-4"}>
                     <div className={"company"}>
@@ -112,8 +113,19 @@ function SpeakerDemographics() {
     )
 }
 
-function Speaker({speaker, updateRecord, insertRecord, deleteRecord}) {
+const SpeakerNoErrorBoundary = memo(function Speaker({speaker, updateRecord, insertRecord, deleteRecord, showErrorCard}) {
     const {showSessions} = useContext(SpeakerFilterContext);
+
+    if (showErrorCard) {
+        return (
+            <div className={"col-xs-12 col-sm-12 col-md-6 col-lg-4 col-sm-12 col-xs-12"}>
+                <div className={"card card-height p-4 mt-4"}>
+                    <img src="/images/speaker-99999.jpg" />
+                    <div><string>Error Showing Speaker</string></div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <SpeakerProvider speaker={speaker} updateRecord={updateRecord}
@@ -130,6 +142,20 @@ function Speaker({speaker, updateRecord, insertRecord, deleteRecord}) {
             </div>
         </SpeakerProvider>
     );
+}, areEqualSpeaker);
+
+function Speaker(props) {
+    return (
+        <ErrorBoundary
+            errorUI={<SpeakerNoErrorBoundary {...props} showErrorCard={true} />}
+        >
+            <SpeakerNoErrorBoundary {...props} />
+        </ErrorBoundary>
+    );
+}
+
+function areEqualSpeaker(prevProps, nextProps) {
+    return prevProps.speaker.favorite === nextProps.speaker.favorite;
 }
 
 export default Speaker;
